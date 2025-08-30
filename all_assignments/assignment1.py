@@ -1,31 +1,9 @@
-from agents import Agent, Runner, AsyncOpenAI, OpenAIChatCompletionsModel, set_tracing_disabled
-from dotenv import load_dotenv, find_dotenv
+from agents import Agent, Runner, set_tracing_disabled
 from rich import print
-import os
-
+from model_config.model_setting import llm_model
 # Disable tracing
 set_tracing_disabled(disabled=True)
 
-# Load .env file
-load_dotenv(find_dotenv(raise_error_if_not_found=True))
-
-# ✅ Get the GEMINI_API_KEY from environment
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-
-if not gemini_api_key:
-    raise ValueError("❌ GEMINI_API_KEY not found. Make sure it's set in your .env file.")
-
-# External client
-externel_client = AsyncOpenAI(
-    api_key=gemini_api_key,
-    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-)
-
-# Chat model
-llm_model = OpenAIChatCompletionsModel(
-    model="gemini-2.5-flash",
-    openai_client=externel_client
-)
 
 # ------------------------------
 # System prompt with fixed Q/As
