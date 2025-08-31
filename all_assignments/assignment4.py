@@ -5,16 +5,23 @@ from model_config.model_setting import llm_model
 from dotenv import load_dotenv, find_dotenv
 import os
 
+
 load_dotenv(find_dotenv())
 
 # Disable tracing
 set_tracing_disabled(disabled=True)
 
+
+# Math function
 # -----------------------
-# Step 1: Weather function
-# -----------------------
+@function_tool
+def add(a: int, b: int) -> int:
+    """Return the sum of two numbers."""
+    return a + b
 
 
+# Weather function
+# -----------------------
 @function_tool
 def get_weather(city: str) -> str:
     """Fetch real weather info for a city using WeatherAPI."""
@@ -38,37 +45,39 @@ def get_weather(city: str) -> str:
 
 
 # -----------------------
-# Step 2: Agent setup
+#  Agent setup
 # -----------------------
-weather_agent = Agent(
-    name="weather_agent",
+multi_tool_agent = Agent(
+    name="multi_tool_agent",
     instructions="""
-    You are a weather assistant.
-    If the user asks about the weather in a city, 
-    use the weather tool to fetch the answer.
-    Otherwise, respond normally.
+    You are a versatile assistant.
+    - If the user asks a math question (like addition), use the add tool.
+    - If the user asks about the weather, use the weather tool.
+    - Otherwise, answer normally.
     """,
     model=llm_model,
-    tools=[get_weather],
+    tools=[add, get_weather],
 )
 
+
 # -----------------------
-# Step 3: Run examples
+#  Run examples
 # -----------------------
 questions = [
+    "What is 15 + 27?",
     "What’s the weather in Karachi?",
+    "Add 200 and 300.",
     "Tell me the weather in Lahore.",
-    "How’s the weather in New York?",
 ]
-
+    
 for q in questions:
-    result = Runner.run_sync(weather_agent, q)
+    result = Runner.run_sync(multi_tool_agent, q)
     print(f"\n[bold green]Q:[/bold green] {q}")
     print(f"[bold yellow]A:[/bold yellow] {result.final_output}")
 
 
 # -----------------------
-# Step 4: Run This command in terminal
+#  Run This command in terminal
 # -----------------------
 # uv run -m all_assignments.assignment3
 
@@ -76,11 +85,15 @@ for q in questions:
 # Final Output
 # -------------
 
+
+# Q: What is 15 + 27?
+# A: The sum of 15 and 27 is 42.
+
 # Q: What’s the weather in Karachi?
-# A: The weather in Karachi, Pakistan is 29.3°C with Partly cloudy.
+# A: The weather in Karachi, Pakistan is 29.0°C with Mist.
+
+# Q: Add 200 and 300.
+# A: The sum of 200 and 300 is 500.
 
 # Q: Tell me the weather in Lahore.
-# A: The weather in Lahore, Pakistan is 25.0°C with Overcast.
-
-# Q: How’s the weather in New York?
-# A: The weather in New York, United States of America is 22.2°C with Partly cloudy.
+# A: The weather in Lahore, Pakistan is 25.1°C with Overcast.
